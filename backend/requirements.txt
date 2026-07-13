@@ -1,0 +1,10 @@
+flask
+flask-cors
+python-dotenv
+requests
+pandas
+numpy
+scikit-learn
+sentence-transformers
+joblib
+mcp

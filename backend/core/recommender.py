@@ -18,23 +18,30 @@ class TravelRecommender:
 
         # Path: backend/core/recommender.py -> go up two levels to find model/
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        model_path = os.path.join(current_dir, '..', 'model', 'travel_model_data.pkl')
+        model_path = os.path.join(current_dir, '..', 'model', 'travel_recommendation_model.pkl')
 
         print("Loading Hybrid Model Artifact...")
 
         try:
             model_data = joblib.load(model_path)
+            
+            # Debugging සඳහා (Keys මොනවාදැයි බැලීමට)
+            print("Keys found in model_data:", model_data.keys())
 
             if model_data.get("schema_version") != 3:
                 print("⚠️ Warning: Artifact schema mismatch!")
 
-            self.df_locations        = model_data["locations"]
-            self.location_embeddings = model_data["location_embeddings"]
-            self.df_reviews          = model_data["reviews"]
-            self.review_embeddings   = model_data["review_embeddings"]
-            self.tfidf_vectorizer    = model_data["tfidf_vectorizer"]
-            self.tfidf_matrix        = model_data["tfidf_matrix"]
-            self.bert_model          = SentenceTransformer(model_data["model_name"])
+            # නිවැරදි Key එක තෝරාගැනීම සඳහා පහත logic එක භාවිතා කරන්න
+            # ඔබේ Terminal එකේ පෙන්වූ Key එක අනුව මෙතැන වෙනස් කරන්න
+            self.df_locations        = model_data.get("locations") or model_data.get("df_locations")
+            self.location_embeddings = model_data.get("location_embeddings")
+            self.df_reviews          = model_data.get("reviews") or model_data.get("df_reviews")
+            self.review_embeddings   = model_data.get("review_embeddings")
+            self.tfidf_vectorizer    = model_data.get("tfidf_vectorizer")
+            self.tfidf_matrix        = model_data.get("tfidf_matrix")
+            
+            model_name = model_data.get("model_name", "sentence-transformers/all-MiniLM-L6-v2")
+            self.bert_model          = SentenceTransformer(model_name)
 
             print("✅ Hybrid Model loaded successfully from:", model_path)
 

@@ -2,24 +2,15 @@ import { useState, useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-const STOPS = [
-  { label: "Day 1: Arrival & Colombo",     lat: 6.9271, lng: 79.8612, day: 1, info: "Vibrant capital city — start your journey here.",         emoji: "🏙️" },
-  { label: "Day 2: Sigiriya Rock",          lat: 7.9570, lng: 80.7603, day: 2, info: "Ancient rock fortress, UNESCO World Heritage Site.",       emoji: "🪨" },
-  { label: "Day 2: Anuradhapura",           lat: 8.3114, lng: 80.4037, day: 2, info: "Sacred ancient city with dagobas and ruins.",              emoji: "🏛️" },
-  { label: "Day 3: Kandy Temple",           lat: 7.2906, lng: 80.6337, day: 3, info: "Temple of the Sacred Tooth Relic, cultural heart.",        emoji: "🛕" },
-  { label: "Day 4: Nuwara Eliya",           lat: 6.9497, lng: 80.7891, day: 4, info: "Hill country tea estates and cool misty climate.",         emoji: "🍃" },
-  { label: "Day 5: Ella Rock Sunrise",      lat: 6.8667, lng: 81.0466, day: 5, info: "Epic sunrise hike with sweeping valley panoramas.",       emoji: "🌅" },
-  { label: "Day 5: Nine Arch Bridge",       lat: 6.8850, lng: 81.0594, day: 5, info: "Iconic colonial-era railway viaduct in the jungle.",       emoji: "🚂" },
-  { label: "Day 6: Mirissa Whale Watching", lat: 5.9483, lng: 80.4550, day: 6, info: "Whale watching and golden sunset beach.",                  emoji: "🐋" },
-  { label: "Day 7: Galle Fort",             lat: 6.0269, lng: 80.2170, day: 7, info: "Dutch colonial fort, UNESCO Heritage Site.",               emoji: "🏰" },
-  { label: "Day 8: Trincomalee",            lat: 8.5874, lng: 81.2152, day: 8, info: "Pristine beaches and ancient Hindu temples.",              emoji: "⛱️" },
-];
+// -----------------------------------------------------------------------
+// Backend config
+// -----------------------------------------------------------------------
+const API_BASE = "http://127.0.0.1:8000";
 
-const DAY_COLORS = {
-  1: "#7baaff", 2: "#c9a84c", 3: "#f97316",
-  4: "#34d399", 5: "#a78bfa", 6: "#38bdf8",
-  7: "#f472b6", 8: "#fb923c",
-};
+const DAY_COLORS = [
+  "#7baaff", "#c9a84c", "#f97316", "#34d399", "#a78bfa",
+  "#38bdf8", "#f472b6", "#fb923c", "#4ade80", "#f87171",
+];
 
 const INTERESTS = [
   { id: "beach",    label: "BEACH LIFE",        emoji: "🏖️" },
@@ -27,6 +18,16 @@ const INTERESTS = [
   { id: "culture",  label: "CULTURAL HERITAGE", emoji: "🏛️" },
   { id: "wildlife", label: "WILDLIFE SAFARI",   emoji: "🐘" },
 ];
+
+const EMOJI_BY_CATEGORY = {
+  Beaches: "🏖️",
+  "Historic Sites": "🏛️",
+  "Religious Sites": "🛕",
+  Museums: "🏺",
+  Wildlife: "🐘",
+  Mountains: "🏔️",
+  default: "📍",
+};
 
 // Leaflet popup global styles injected once
 const POPUP_STYLE = `
@@ -66,50 +67,87 @@ function makePinIcon(color, emoji) {
   });
 }
 
+// Turn a backend `selected_places` entry into the shape the map/sidebar use.
+function toStop(place) {
+  const day = place.day || 1;
+  return {
+    label: `Day ${day}: ${place.place_name}`,
+    lat: place.lat,
+    lng: place.lng,
+    day,
+    info: place.why_we_recommend || place.location || "",
+    emoji: EMOJI_BY_CATEGORY[place.category] || EMOJI_BY_CATEGORY.default,
+  };
+}
+
+function buildQuery(activeInterests) {
+  const interestLabels = INTERESTS
+    .filter((it) => activeInterests.includes(it.id))
+    .map((it) => it.label.toLowerCase());
+  if (interestLabels.length === 0) return "A great trip around Sri Lanka";
+  return `A trip focused on ${interestLabels.join(", ")}`;
+}
+
 export default function CeylonExplorer() {
   const mapRef         = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef     = useRef([]);
+  const routeLinesRef  = useRef([]);
 
   const [activeInterests, setActiveInterests] = useState(["beach", "mountain", "culture"]);
   const [travelStyle, setTravelStyle]         = useState("Solo");
+  const [days, setDays]                       = useState(8);
+  const [travelDate, setTravelDate]           = useState("2026-10-10");
   const [activeDay, setActiveDay]             = useState(null);
 
-useEffect(() => {
+  const [stops, setStops]         = useState([]);
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState(null);
+  const [reasoning, setReasoning] = useState("");
+
+  // ── Map init (runs once) ──
+  useEffect(() => {
     if (mapInstanceRef.current) return;
     injectPopupStyles();
 
-    // සිතියම නිර්මාණය කිරීම
-    const map = L.map(mapRef.current, { 
-      center: [7.8, 80.5], 
+    const map = L.map(mapRef.current, {
+      center: [7.8, 80.5],
       zoom: 7,
       minZoom: 6,
       maxZoom: 10,
-      zoomControl: false // මම zoom control එක අයින් කරා, අවශ්‍ය නම් පසුව එකතු කරන්න
+      zoomControl: false,
     });
 
-    // 1. ඔබගේ 3D පින්තූරය Overlay කිරීම
-    // [දකුණු-බටහිර අගය, උතුරු-නැගෙනහිර අගය] - පින්තූරය ලංකාවේ පිහිටීමට ගැලපෙන සේ
-    const imageBounds = [[5.5, 79.0], [10.2, 82.5]]; 
-    const imageUrl = '/sri-lanka-3d.png'; // පින්තූරයේ නම
+    const imageBounds = [[5.5, 79.0], [10.2, 82.5]];
+    const imageUrl = "/sri-lanka-3d.png";
 
-    L.imageOverlay(imageUrl, imageBounds, {
-      opacity: 1,
-      zIndex: 1
-    }).addTo(map);
-
-    // සිතියම පින්තූරයේ ප්‍රමාණයට අනුව සකස් කිරීම
+    L.imageOverlay(imageUrl, imageBounds, { opacity: 1, zIndex: 1 }).addTo(map);
     map.fitBounds(imageBounds);
 
-    // 2. මාර්ගය ඇඳීම
-    const coords = STOPS.map((s) => [s.lat, s.lng]);
-    // Glowing effect එකක් සඳහා පේළි දෙකක් ඇඳීම
-    L.polyline(coords, { color: "#38bdf8", weight: 6, opacity: 0.2 }).addTo(map); // Glow
-    L.polyline(coords, { color: "#ffffff", weight: 2.5, opacity: 0.9, dashArray: "5,5" }).addTo(map); // Line
+    mapInstanceRef.current = map;
+    return () => { map.remove(); mapInstanceRef.current = null; };
+  }, []);
 
-    // 3. Markers (Pins) එකතු කිරීම
-    markersRef.current = STOPS.map((s) =>
-      L.marker([s.lat, s.lng], { icon: makePinIcon(DAY_COLORS[s.day], s.emoji) })
+  // ── Redraw markers + route whenever `stops` changes ──
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    // clear previous layers
+    markersRef.current.forEach((m) => map.removeLayer(m));
+    routeLinesRef.current.forEach((l) => map.removeLayer(l));
+    markersRef.current = [];
+    routeLinesRef.current = [];
+
+    if (stops.length === 0) return;
+
+    const coords = stops.map((s) => [s.lat, s.lng]);
+    const glow = L.polyline(coords, { color: "#38bdf8", weight: 6, opacity: 0.2 }).addTo(map);
+    const line = L.polyline(coords, { color: "#ffffff", weight: 2.5, opacity: 0.9, dashArray: "5,5" }).addTo(map);
+    routeLinesRef.current = [glow, line];
+
+    markersRef.current = stops.map((s) =>
+      L.marker([s.lat, s.lng], { icon: makePinIcon(DAY_COLORS[(s.day - 1) % DAY_COLORS.length], s.emoji) })
         .addTo(map)
         .bindPopup(
           `<div class="popup-title">${s.label.replace(/Day \d+: /, "")}</div>
@@ -119,9 +157,8 @@ useEffect(() => {
         )
     );
 
-    mapInstanceRef.current = map;
-    return () => { map.remove(); mapInstanceRef.current = null; };
-  }, []);
+    map.fitBounds(coords, { padding: [40, 40] });
+  }, [stops]);
 
   const toggleInterest = (id) =>
     setActiveInterests((prev) =>
@@ -130,9 +167,58 @@ useEffect(() => {
 
   const flyToStop = (i) => {
     setActiveDay(i);
-    mapInstanceRef.current?.setView([STOPS[i].lat, STOPS[i].lng], 12, { animate: true });
+    mapInstanceRef.current?.setView([stops[i].lat, stops[i].lng], 12, { animate: true });
     markersRef.current[i]?.openPopup();
   };
+
+  // ── Call the Flask backend ──
+  async function generateItinerary() {
+    setLoading(true);
+    setError(null);
+    setActiveDay(null);
+
+    try {
+      const response = await fetch(`${API_BASE}/api/agent-plan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: buildQuery(activeInterests),
+          start_location: "Colombo",
+          end_location: "Colombo",
+          travel_date: travelDate,
+          days,
+          travelers: travelStyle === "Couple" ? 2 : 1,
+          transport_type: "car",
+          daily_max_travel_hours: 6,
+          include_weather: true,
+          travel_style: travelStyle,
+          include_accommodation: true,
+        }),
+      });
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.error || `Request failed (${response.status})`);
+      }
+
+      const data = await response.json();
+      const selected = data.selected_places || [];
+
+      if (selected.length === 0) {
+        setError("No places came back for this trip. Try different interests or a shorter trip.");
+        setStops([]);
+        return;
+      }
+
+      setStops(selected.map(toStop));
+      setReasoning(data.agent_reasoning || "");
+    } catch (err) {
+      setError(err.message || "Could not reach the planning server.");
+      setStops([]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="flex flex-col h-screen bg-[#1a2744] font-sans overflow-hidden">
@@ -170,9 +256,22 @@ useEffect(() => {
           {/* Step 1 */}
           <p className="text-white/40 text-[9px] tracking-[1.2px] mt-3 mb-1">STEP 1:</p>
           <p className="text-white text-[10px] font-medium tracking-[1px] mb-2">TRIP DURATION</p>
-          <div className="flex items-center gap-2 bg-white/[0.07] border border-white/[0.14] rounded-lg px-3 py-2 cursor-pointer mb-2">
-            <span className="text-white/80 text-[10px] flex-1">OCT 10 – OCT 18, 2024 · 8 Days</span>
-            <span className="text-white/35 text-xs">▾</span>
+          <div className="flex items-center gap-2 bg-white/[0.07] border border-white/[0.14] rounded-lg px-3 py-2 mb-2">
+            <input
+              type="date"
+              value={travelDate}
+              onChange={(e) => setTravelDate(e.target.value)}
+              className="bg-transparent text-white/80 text-[10px] flex-1 outline-none [color-scheme:dark]"
+            />
+            <input
+              type="number"
+              min={1}
+              max={30}
+              value={days}
+              onChange={(e) => setDays(Math.max(1, Number(e.target.value) || 1))}
+              className="bg-transparent text-white/80 text-[10px] w-10 outline-none text-right"
+            />
+            <span className="text-white/40 text-[9px]">days</span>
           </div>
 
           {/* Step 2 */}
@@ -220,14 +319,35 @@ useEffect(() => {
           </div>
 
           {/* Generate button */}
-          <button className="w-full mt-3 mb-3 py-3 rounded-lg text-[10px] font-semibold tracking-[1.5px] text-[#1a0e00] cursor-pointer hover:opacity-90 transition-opacity"
-            style={{ background: "linear-gradient(135deg, #b8922a, #e8c96a)" }}>
-            GENERATE 3D ITINERARY
+          <button
+            onClick={generateItinerary}
+            disabled={loading}
+            className="w-full mt-3 mb-1 py-3 rounded-lg text-[10px] font-semibold tracking-[1.5px] text-[#1a0e00] cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ background: "linear-gradient(135deg, #b8922a, #e8c96a)" }}
+          >
+            {loading ? "PLANNING…" : "GENERATE 3D ITINERARY"}
           </button>
 
+          {error && (
+            <p className="text-[9px] text-red-300 bg-red-500/10 border border-red-500/30 rounded-md px-2 py-2 mb-2 leading-relaxed">
+              {error}
+            </p>
+          )}
+
+          {!loading && !error && reasoning && (
+            <p className="text-[9px] text-white/45 leading-relaxed mb-2 mt-2">
+              {reasoning}
+            </p>
+          )}
+
           {/* Day list */}
-          <div className="flex flex-col">
-            {STOPS.map((stop, i) => (
+          <div className="flex flex-col mt-2">
+            {stops.length === 0 && !loading && (
+              <p className="text-white/30 text-[9px] tracking-[0.3px] px-2 py-3">
+                Set your trip details and generate an itinerary to see stops here.
+              </p>
+            )}
+            {stops.map((stop, i) => (
               <div
                 key={i}
                 onClick={() => flyToStop(i)}
@@ -235,7 +355,7 @@ useEffect(() => {
                   ${activeDay === i ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"}`}
               >
                 <span className="w-[6px] h-[6px] rounded-full flex-shrink-0"
-                  style={{ background: DAY_COLORS[stop.day] }} />
+                  style={{ background: DAY_COLORS[(stop.day - 1) % DAY_COLORS.length] }} />
                 <span className={`text-[9px] tracking-[0.3px] flex-1 transition-colors
                   ${activeDay === i ? "text-[#c9a84c]" : "text-white/55"}`}>
                   {stop.label}
@@ -248,7 +368,6 @@ useEffect(() => {
 
         {/* ── Map ── */}
         <div className="relative flex-1 overflow-hidden">
-          {/* Overlay title */}
           <div className="absolute top-5 left-5 z-[500] pointer-events-none">
             <h1 className="text-white text-3xl font-bold tracking-[2px] leading-tight"
               style={{ textShadow: "0 2px 14px rgba(0,0,0,0.75)" }}>

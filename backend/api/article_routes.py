@@ -1,10 +1,22 @@
 import re
 from datetime import datetime, timezone
 
-from bson import ObjectId
+try:
+    from bson import ObjectId
+except ImportError:  # pragma: no cover - environment fallback
+    class ObjectId(str):
+        pass
+
 from flask import Blueprint, jsonify, request
-from pymongo import DESCENDING
-from pymongo.errors import DuplicateKeyError
+
+try:
+    from pymongo import DESCENDING
+    from pymongo.errors import DuplicateKeyError
+except ImportError:  # pragma: no cover - environment fallback
+    DESCENDING = -1
+
+    class DuplicateKeyError(Exception):
+        pass
 
 from core.collections import articles_collection, categories_collection
 

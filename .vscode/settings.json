@@ -1,5 +1,6 @@
 {
     "github.copilot.chat.additionalReadAccessPaths": [
         "qW"
-    ]
+    ],
+    "python-envs.defaultEnvManager": "ms-python.python:system"
 }
