@@ -1,7 +1,5 @@
 // hooks/useRoutePlanner.js
-
 import { useEffect, useMemo, useRef, useState } from "react";
-// DESTINATIONS එක DEFAULT_DESTINATIONS විදිහට නම වෙනස් කරලා ගත්තා පැටලෙන්නේ නැති වෙන්න
 import { DESTINATIONS as DEFAULT_DESTINATIONS, ORS_API_KEY } from "../routePlannerConstant";
 import { buildPreviewRoute, distanceKm } from "../utils/routeMath";
 import { getCurrentDeviceLocation, speakDirection } from "../utils/geolocation";
@@ -28,7 +26,7 @@ export function useRoutePlanner(recommendedPlaces = []) {
     }));
   }, [recommendedPlaces]);
 
-  // 3. States මුලින්ම set කරනවා
+
   const [startId, setStartId] = useState(destinations[0]?.id || 1);
   const [endId, setEndId] = useState(destinations[destinations.length - 1]?.id || 7);
   const [selectedIds, setSelectedIds] = useState(destinations.slice(1, -1).map(d => d.id));
@@ -47,17 +45,16 @@ export function useRoutePlanner(recommendedPlaces = []) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // අලුත් Places ආවම ඉබේම Start/End update වෙන්න useEffect එකක්
+ 
   useEffect(() => {
     if (destinations.length > 0) {
       setStartId(destinations[0].id);
       setEndId(destinations[destinations.length - 1].id);
       setSelectedIds(destinations.slice(1, -1).map(d => d.id));
-      resetGeneratedRoute(); // අලුත් data ආවම පරණ route එක reset කරනවා
+      resetGeneratedRoute(); 
     }
   }, [destinations]);
 
-  // 4. DESTINATIONS වෙනුවට හැමතැනම destinations පාවිච්චි කරනවා
   const selectedStart = destinations.find((d) => d.id === Number(startId)) || destinations[0];
   const end = destinations.find((d) => d.id === Number(endId)) || destinations[destinations.length - 1];
   const routeStart = useCurrentAsStart && currentLocation ? currentLocation : selectedStart;
@@ -193,7 +190,6 @@ export function useRoutePlanner(recommendedPlaces = []) {
 
         optimizedStops = optimizedRoute.steps
           .filter((step) => step.type === "job")
-          // DESTINATIONS වෙනුවට destinations පාවිච්චි කළා
           .map((step) => destinations.find((d) => d.id === step.job))
           .filter(Boolean);
       }
@@ -344,7 +340,7 @@ export function useRoutePlanner(recommendedPlaces = []) {
   }
 
   return {
-    destinations, // අලුතින් destinations return කරනවා (UI එකේ පෙන්වන්න)
+    destinations, 
     startId, endId, selectedIds,
     currentLocation, useCurrentAsStart, locationLoading,
     selectedStart, end, routeStart, selectedPlaces,

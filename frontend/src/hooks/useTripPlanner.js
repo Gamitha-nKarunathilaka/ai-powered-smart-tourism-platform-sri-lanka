@@ -22,21 +22,15 @@ async function callApi(endpoint, body) {
   return response.json();
 }
 
-// The backend's accommodation/booking lookup needs a real check-in date
-// (hotels are searched with checkin_date/checkout_date). If the user
-// leaves Travel Date blank, sending null silently makes hotel search
-// come back empty even though everything else in the response works
-// fine. Default to tomorrow instead.
 function resolveTravelDate(travelDate) {
   if (travelDate) return travelDate;
 
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  return tomorrow.toISOString().split("T")[0]; // YYYY-MM-DD
+  return tomorrow.toISOString().split("T")[0];
 }
 
 export function useTripPlanner() {
-  // --- form state ---
   const [query, setQuery] = useState("I want surfing places in Sri Lanka");
   const [startLocation, setStartLocation] = useState("Colombo");
   const [endLocation, setEndLocation] = useState("Colombo");
@@ -52,7 +46,7 @@ export function useTripPlanner() {
     "culture",
   ]);
 
-  // --- result state ---
+
   const [tripStops, setTripStops] = useState(FALLBACK_STOPS);
   const [routeCoordinates, setRouteCoordinates] = useState([]);
   const [agentSummary, setAgentSummary] = useState(
@@ -61,13 +55,10 @@ export function useTripPlanner() {
   const [dayPlan, setDayPlan] = useState([]);
   const [routeInfo, setRouteInfo] = useState(null);
 
-  // හෝටල් දත්ත රඳවා තබා ගැනීමේ State එක
   const [accommodationsData, setAccommodationsData] = useState([]);
 
-  // --- "my trip" (user-saved) state ---
   const [myTrip, setMyTrip] = useState([]);
 
-  // --- request state ---
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -147,7 +138,7 @@ export function useTripPlanner() {
         });
       }
 
-      // 🌟 මුල් API Response එක බලාගැනීමට Console Log එක
+    
       console.log("🔥 FULL API RESPONSE 🔥:", data);
 
       const apiPlaces = getPlacesFromApiResponse(data);
@@ -178,7 +169,6 @@ export function useTripPlanner() {
       setDayPlan(data.day_plan || data.itinerary || []);
       setRouteInfo(data.route_info || data.optimized_route || null);
 
-      // 🌟 Postman JSON Structure එකට (result.hotels) අනුව හෝටල් නිවැරදිව Extract කරගැනීම
       let extractedHotels = [];
 
       if (data.accommodations && Array.isArray(data.accommodations)) {
@@ -197,7 +187,6 @@ export function useTripPlanner() {
         });
       }
 
-      // 🌟 සාර්ථකව අල්ලාගත් හෝටල් ලැයිස්තුව Console එකේ පෙන්වීමට
       console.log("🏨 SUCCESSFULLY EXTRACTED HOTELS:", extractedHotels);
 
       setAccommodationsData(extractedHotels);

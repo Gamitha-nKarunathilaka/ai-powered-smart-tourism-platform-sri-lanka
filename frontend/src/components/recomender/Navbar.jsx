@@ -33,7 +33,6 @@ export default function Navbar() {
           HOME
         </NavLink>
 
-        {/* NavHashLink වෙනුවට HashLink භාවිතා කර ඇත */}
         <HashLink smooth to="/#destinations" className={defaultStyle}>
           DESTINATIONS
         </HashLink>

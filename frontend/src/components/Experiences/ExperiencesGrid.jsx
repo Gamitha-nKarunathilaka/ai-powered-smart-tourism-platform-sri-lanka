@@ -36,8 +36,8 @@ const ExperienceCard = ({ experience }) => (
         Learn More <span className="ml-2">→</span>
       </button>
     </div>
+    {/*  Glowing Border Hover Effect  */}
     
-    {/* Glowing Border Hover Effect */}
     <div className="absolute inset-0 border-2 border-transparent group-hover:border-cyan-500/50 rounded-2xl transition-all duration-300" />
   </motion.div>
 );

@@ -1,4 +1,4 @@
-// pages/RoutePlanner.jsx
+
 import { useState } from "react";
 import { useLocation } from "react-router-dom"; // 1. useLocation import කරගත්තා
 import { useRoutePlanner } from "../hooks/useRoutePlanner";
@@ -11,17 +11,15 @@ import RouteSummaryCard from "../components/route_planner/RouteSummaryCard";
 import DirectionPanel from "../components/route_planner/DirectionPanel";
 import RouteStopBar from "../components/route_planner/RouteStopBar";
 
-// 2. Prop එක (recommendedPlaces = []) අයින් කරලා හිස්ව තිබ්බා
+
 export default function RoutePlanner() {
-  // 3. location හරහා එවන state එක අල්ලා ගන්නවා
+ 
   const location = useLocation();
   
-  // HeroSection එකෙන් එවන 'recommendedPlaces' හෝ CeylonExplorer එකෙන් එවන 'places' දෙකෙන් එකක් ගන්නවා
   const receivedPlaces = location.state?.recommendedPlaces || location.state?.places || [];
 
   console.log("RoutePlanner වෙත location හරහා ලැබුණු Places ටික:", receivedPlaces);
-  
-  // 4. අර ගත්ත ඩේටා ටික hook එකට දෙනවා
+
   const trip = useRoutePlanner(receivedPlaces);
   
   const { mapRef, mapApi } = useRouteMap({
@@ -35,13 +33,11 @@ export default function RoutePlanner() {
   return (
     <div className="text-white bg-[#020b1c] pt-1">
       <div className="lg:h-[calc(100vh-40px)] min-h-[700px] flex flex-col lg:flex-row lg:overflow-hidden">
-        {/* SIDEBAR WRAPPER */}
         <div
           className={`relative shrink-0 bg-[#071a33]/95 border-r border-white/10 transition-all duration-300 ease-in-out ${
             sidebarOpen ? "lg:w-[360px]" : "lg:w-14"
           }`}
         >
-          {/* Collapse / expand toggle */}
           <button
             type="button"
             onClick={() => setSidebarOpen((open) => !open)}
@@ -141,7 +137,7 @@ export default function RoutePlanner() {
               </div>
             </aside>
           ) : (
-            // Collapsed rail
+           
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}

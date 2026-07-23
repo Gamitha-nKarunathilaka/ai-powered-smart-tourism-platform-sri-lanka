@@ -27,9 +27,7 @@ _CACHE_PATH = os.path.abspath(
 _lock = threading.Lock()
 _cache = None
 
-# Common Sri Lanka cities/towns likely to be typed as start/end locations
-# or destination cities. Extend this list freely — every entry here is
-# one less network round trip, permanently.
+
 KNOWN_CITY_COORDS = {
     "colombo": (6.9271, 79.8612),
     "galle": (6.0535, 80.2210),

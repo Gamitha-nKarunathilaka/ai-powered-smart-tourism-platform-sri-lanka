@@ -24,7 +24,6 @@ const Navbar = () => {
     
       <div className="hidden lg:flex space-x-8 text-[11px] uppercase tracking-widest text-gray-400 font-bold">
         
-        
         <NavLink 
           to="/" 
           className={({ isActive }) => isActive ? `${defaultStyle} ${activeStyle}` : defaultStyle}
@@ -33,17 +32,14 @@ const Navbar = () => {
           Home
         </NavLink>
 
-       
         <NavHashLink smooth to="/#experiences" className={defaultStyle}>
           Destinations
         </NavHashLink>
 
-      
         <NavHashLink smooth to="/#experiences" className={defaultStyle}>
           Experiences
         </NavHashLink>
 
-     
         <NavLink to="/blog" className={({ isActive }) => isActive ? `${defaultStyle} ${activeStyle}` : defaultStyle}>
           Blog
         </NavLink>
@@ -62,7 +58,6 @@ const Navbar = () => {
         <Search size={18} className="cursor-pointer hover:text-cyan-400 transition-colors" />
         <Globe size={18} className="cursor-pointer hover:text-cyan-400 transition-colors" />
         
-       
         <Link 
           to="/plan-trip" 
           className="bg-cyan-400/80 border border-cyan-500/50 px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center hover:bg-cyan-500 hover:text-black transition-all w-fit"

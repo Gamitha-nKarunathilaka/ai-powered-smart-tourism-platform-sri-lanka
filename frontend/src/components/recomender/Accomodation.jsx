@@ -27,7 +27,7 @@ export default function Accommodation({ stops }) {
             key={hotel.id}
             className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 flex flex-col"
           >
-            {/* 🏨 ලකුණු වෙනුවට දැන් ලස්සන, පැහැදිලි පින්තූරයක් පෙන්වයි */}
+         
             <div className="h-36 rounded-xl bg-white/10 mb-4 overflow-hidden relative">
               <img
                 src={hotel.image}
@@ -68,7 +68,7 @@ export default function Accommodation({ stops }) {
           </div>
         ))
       ) : (
-        // හෝටල් කිසිවක් නැති විට පෙන්වන පණිවිඩය
+       
         <div className="col-span-full flex flex-col items-center justify-center py-20 text-white/50">
           <span className="text-4xl mb-3">🔍</span>
           <p>No accommodations found for this trip yet.</p>

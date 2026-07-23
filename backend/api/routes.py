@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 try:
     from bson import ObjectId
-except ImportError:  # pragma: no cover - environment fallback
+except ImportError:
     class ObjectId(str):
         pass
 
@@ -12,7 +12,7 @@ from flask import Blueprint, jsonify, request
 try:
     from pymongo import DESCENDING, ReturnDocument
     from pymongo.errors import DuplicateKeyError
-except ImportError:  # pragma: no cover - environment fallback
+except ImportError:
     DESCENDING = -1
 
     class ReturnDocument:
@@ -61,9 +61,6 @@ def create_slug(title):
     return slug.strip("-")
 
 
-# -------------------------------------------------------------------
-# AI RECOMMENDATION ROUTE
-# -------------------------------------------------------------------
 
 @api_bp.route("/recommendations", methods=["POST"])
 def recommend():
@@ -109,9 +106,6 @@ def recommend():
     })
 
 
-# -------------------------------------------------------------------
-# BLOG ARTICLE ROUTES
-# -------------------------------------------------------------------
 
 @api_bp.route("/articles", methods=["GET"])
 def get_articles():
@@ -377,9 +371,7 @@ def delete_article(slug):
     })
 
 
-# -------------------------------------------------------------------
-# CATEGORY ROUTES
-# -------------------------------------------------------------------
+#
 
 @api_bp.route("/categories", methods=["GET"])
 def get_categories():

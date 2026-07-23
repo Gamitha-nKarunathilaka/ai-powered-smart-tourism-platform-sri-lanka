@@ -11,7 +11,7 @@ const HeroSection = () => {
   return (
     <section className="relative pt-28 pb-8 px-6 lg:px-12 min-h-screen flex flex-col justify-between overflow-hidden bg-slate-900">
       
-      {/* --- NEW: Starry / Dot Pattern Background --- */}
+      {/* NEW: Starry / Dot Pattern Background */}
       <div 
         className="absolute inset-0 z-0 pointer-events-none opacity-20 mix-blend-screen"
         style={{
@@ -20,7 +20,7 @@ const HeroSection = () => {
         }}
       />
 
-      {/* --- Animated Misty Background Effects --- */}
+      {/* Animated Misty Background Effects */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         
         {/* Static Ambient Glows */}
@@ -49,10 +49,10 @@ const HeroSection = () => {
         />
       </div>
 
-      {/* --- Main 3-Column Layout --- */}
+      {/*Main 3-Column Layout*/}
       <div className="relative z-10 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center max-w-[1600px] mx-auto mt-4">
         
-        {/* --- LEFT COLUMN: Features --- */}
+        {/* LEFT COLUMN: Features */}
         <div className="lg:col-span-3 space-y-6">
           <div className="mb-8">
             <span className="text-cyan-400 text-[9px] font-black tracking-[0.2em] uppercase block mb-3">
@@ -92,7 +92,7 @@ const HeroSection = () => {
           </div>
         </div>
 
-        {/* --- CENTER COLUMN: Holographic Map --- */}
+        {/* CENTER COLUMN: Holographic Map */}
         <div className="lg:col-span-6 relative flex flex-col items-center justify-center h-[500px] lg:h-[650px]">
           
 
@@ -111,7 +111,7 @@ const HeroSection = () => {
           </button>
         </div>
 
-        {/* --- RIGHT COLUMN: Travel Blog --- */}
+        {/* RIGHT COLUMN: Travel Blog */}
         <div className="lg:col-span-3 space-y-4 self-start mt-8 lg:mt-0">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-[10px] font-black uppercase tracking-widest text-cyan-400">Travel Blog</h3>
@@ -153,7 +153,7 @@ const HeroSection = () => {
 
       </div>
 
-      {/* --- BOTTOM ROW: Statistics Bar --- */}
+      {/* BOTTOM ROW: Statistics Bar */}
       <div className="relative z-10 w-full max-w-[1400px] mx-auto mt-12 bg-white/[0.02] backdrop-blur-lg border border-white/10 rounded-2xl p-4 flex flex-wrap lg:flex-nowrap justify-between items-center gap-4">
         {[
           { icon: "🏛️", count: "8", label: "UNESCO Sites" },

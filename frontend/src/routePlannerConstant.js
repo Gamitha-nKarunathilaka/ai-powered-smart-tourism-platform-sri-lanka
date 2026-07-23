@@ -1,11 +1,4 @@
-// roadPlannerConstants.js  (place at src/ root — sibling to constant.js)
-/*
-  Project root .env file:
-  VITE_ORS_API_KEY=your_full_openrouteservice_key
 
-  Restart Vite after editing .env:
-  npm run dev
-*/
 
 export const ORS_API_KEY = import.meta.env.VITE_ORS_API_KEY;
 

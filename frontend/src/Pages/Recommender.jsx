@@ -1,16 +1,4 @@
-/**
- * CeylonExplorer.jsx
- *
- * Component-based rewrite of the original monolithic file.
- * This file now only:
- *  - wires together the two custom hooks (map + trip planner)
- *  - holds UI-only state (activeTab, activeStop)
- *  - composes presentational components
- *
- * All business logic lives in hooks/, all static data in constants.js,
- * all pure helpers in utils/, and every visual section is its own
- * component under components/.
- */
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLeafletMap } from "../hooks/useLeafletMap";
@@ -21,7 +9,6 @@ import TripPlannerSidebar from "../components/recomender/SideBar";
 import HeroSection from "../components/recomender/Hero";
 import TabBar from "../components/recomender/TabBar";
 import Recommendations from "../components/recomender/Recommendation";
-// SimplePanel ඉවත් කර ඇති නිසා එය මෙතනින්ද ඉවත් කළ හැක
 import Accommodation from "../components/recomender/Accomodation";
 import Itinerary from "../components/recomender/Itinery";
 
@@ -51,13 +38,10 @@ export default function CeylonExplorer() {
     const stop = tripStops[index];
     if (!stop) return;
     setActiveStop(index);
-    // setActiveTab("map"); <--- Map tab එක නැති නිසා මෙය ඉවත් කළ යුතුයි
     flyToStop(index, stop);
   };
 
-  // Sends the recommended (or hand-picked "My Trip") places over to the
-  // Road Planner page so the user can generate a real driving route
-  // through them. Read on the other side via useLocation().state.places.
+
   const handlePlanRoadRoute = () => {
     const placesForRoadPlanner = myTrip && myTrip.length > 0 ? myTrip : tripStops;
     navigate("/map", { state: { places: placesForRoadPlanner } });
@@ -90,7 +74,6 @@ export default function CeylonExplorer() {
                 totalDistance={planner.totalDistance}
                 totalDuration={planner.totalDuration}
                 recommendedPlaces={myTrip && myTrip.length > 0 ? myTrip : tripStops}
-                // onViewFullMap={() => setActiveTab("map")}
                 onFlyToStart={() => tripStops[0] && viewStop(0)}
                 onZoomIn={zoomIn}
                 onZoomOut={zoomOut}
@@ -107,7 +90,6 @@ export default function CeylonExplorer() {
                 />
               )}
     
-              {/* 🌟 වෙනස 2: tripStops වෙනුවට accommodationsData යැවීම */}
               {activeTab === "accommodation" && (
                 <Accommodation stops={accommodationsData || tripStops} />
               )}

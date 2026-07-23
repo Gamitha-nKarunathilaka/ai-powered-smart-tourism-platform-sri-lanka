@@ -28,22 +28,19 @@ export default function TripPlannerSidebar({
 
   return (
     <>
-      {/* 
-        Background, Border සහ Box Shadow ඉවත් කර ඇත.
-        අයිකන් එක වඩාත් පැහැදිලිව පෙනීමට 'drop-shadow-md' යොදා ඇත.
-      */}
+     
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="lg:hidden fixed top-[85px] left-4 z-[999] w-12 h-12 flex items-center justify-center transition-transform active:scale-95 drop-shadow-md"
       >
         {isOpen ? (
-          // Menu එක Open වූ විට පෙන්වන 'Close' (X) ලකුණ (සුදු පාටින්)
+          
           <div className="w-5 h-5 flex flex-col items-center justify-center relative">
             <div className="w-6 h-[2px] bg-white absolute rotate-45 transition-all duration-300 rounded-full" />
             <div className="w-6 h-[2px] bg-white absolute -rotate-45 transition-all duration-300 rounded-full" />
           </div>
         ) : (
-          // Menu එක Close වී ඇති විට පෙන්වන ඉරි 3 (සුදු පාටින්)
+          
           <div className="flex flex-col items-start justify-center gap-[5px] w-6">
             <div className="w-full h-[2px] bg-white rounded-full transition-all duration-300" />
             <div className="w-[70%] h-[2px] bg-white rounded-full transition-all duration-300" />

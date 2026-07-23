@@ -1,5 +1,4 @@
 // utils/mapHelpers.js
-// Pure functions only — no React, no DOM. Safe to unit test in isolation.
 
 export function safeNumber(value, fallback = null) {
   const num = Number(value);

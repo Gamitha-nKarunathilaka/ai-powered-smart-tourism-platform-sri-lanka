@@ -14,10 +14,9 @@ const Newsletter = () => {
           className="w-full h-full object-cover opacity-50 mix-blend-screen" 
         />
 
-        {/* යාවත්කාලීන කළ Gradient එක */}
+       
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/60 to-transparent" />
         
-        {/* වම් පස අකුරු වලට පිටිපස්සෙන් තවත් කුඩා glow එකක් */}
         <div className="absolute top-0 left-0 w-1/2 h-full bg-slate-900/40 backdrop-blur-[2px]" />
       </div>
 

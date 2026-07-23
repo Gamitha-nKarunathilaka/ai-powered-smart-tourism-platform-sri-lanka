@@ -1,5 +1,4 @@
 // utils/leafletIcons.js
-// The only file that should import Leaflet just to build an icon.
 
 import L from "leaflet";
 

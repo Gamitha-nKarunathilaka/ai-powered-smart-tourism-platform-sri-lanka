@@ -16,16 +16,15 @@ from mcp_client import MCPTravelClient
 
 load_dotenv()
 
-# Configure Gemini API client safely and provide clear messaging if missing
+
 _api_key = os.getenv("GEMINI_API_KEY")
 if not _api_key:
-    # Do not raise here — allow the server to start but surface helpful errors later
     print("Warning: GEMINI_API_KEY is not set. Agent calls will fail until configured.")
 elif genai is not None:
     try:
         genai.configure(api_key=_api_key)
     except Exception as e:
-        # Log configuration errors to stdout/stderr for troubleshooting
+      
         print("Error configuring Google Generative AI client:", str(e))
 
 
@@ -55,12 +54,12 @@ tools = [
     }
 ]
 
-# Initialize model object lazily to avoid crashing on import if configuration fails
+
 model = None
 if genai is not None:
     try:
         model = genai.GenerativeModel(
-            "gemini-3.1-flash-lite",  # ensure model string is valid for your account
+            "gemini-3.1-flash-lite",  
             tools=[{"function_declarations": tools}]
         )
     except Exception as e:
@@ -69,11 +68,6 @@ else:
     print("Warning: google.generativeai is not installed; using deterministic fallback planning.")
 
 
-# How many places we want available per day, minimum, before the agent
-# is even asked to trim the list. This is the main lever for "days=5
-# but only 3 days of output" style bugs — if the agent under-selects,
-# the fallback logic below tops the list back up instead of silently
-# shipping a shorter trip.
 MIN_PLACES_PER_DAY = 1
 MAX_PLACES_PER_DAY = 2
 
@@ -130,15 +124,11 @@ class TravelAgent:
 
         _plan_start = time.time()
 
-        # Make sure we always ask the recommender for enough raw
-        # candidates to cover the whole trip, even for long (14-20 day)
-        # itineraries. days * 5 gives headroom for places that get
-        # filtered out by weather/seasonality/agent judgement.
         effective_top_n = max(top_n, days * 5)
 
         async with MCPTravelClient() as mcp:
 
-            # 1. ML model recommendations
+          
             _t0 = time.time()
             recommendation_result = await mcp.call_tool(
                 "recommend_places",
@@ -151,13 +141,6 @@ class TravelAgent:
             print(f"[agent] days={days} effective_top_n={effective_top_n} "
                   f"candidates_returned={len(candidates)}")
 
-            # 2. Enrich each candidate with seasonality + weather — run
-            #    concurrently across ALL candidates (not one place at a
-            #    time in a sequential loop). This is the main latency fix:
-            #    with ~15 candidates × ~2-3 external HTTP calls each,
-            #    sequential awaiting could take 45-90+ seconds; running
-            #    them concurrently brings it down to roughly the time of
-            #    the single slowest call.
             _t0 = time.time()
             enriched_places = await asyncio.gather(*[
                 self._enrich_place(mcp, place, travel_date, include_weather)
@@ -166,8 +149,7 @@ class TravelAgent:
             enriched_places = list(enriched_places)
             print(f"[TIMING] enrichment (seasonality+weather, {len(candidates)} places): {time.time() - _t0:.2f}s")
 
-            # 3. AGENT DECISION: Gemini reasons over seasonality+weather+day budget
-            #    to decide which places are actually feasible to visit
+         
             min_target = days * MIN_PLACES_PER_DAY
             max_target = days * MAX_PLACES_PER_DAY
 
@@ -234,17 +216,14 @@ Call select_feasible_places with your decision.
             print(f"[agent] gemini_selected={len(feasible_places)} "
                   f"gemini_excluded={len(excluded_places)} min_target={min_target}")
 
-            # SAFETY NET: if Gemini returned nothing usable, or under-selected
-            # relative to the trip length, top the list back up from the
-            # remaining enriched candidates (best-scoring first) instead of
-            # silently shipping a shorter trip than the traveler asked for.
+        
             if len(feasible_places) < min_target:
                 already_selected_names = {p.get("place_name") for p in feasible_places}
                 remaining = [
                     p for p in enriched_places
                     if p.get("place_name") not in already_selected_names
                 ]
-                # Prefer places with a decent seasonality score if available
+              
                 remaining.sort(
                     key=lambda p: p.get("seasonality_score", 0),
                     reverse=True
@@ -269,7 +248,7 @@ Call select_feasible_places with your decision.
             if not feasible_places and enriched_places:
                 feasible_places = enriched_places[:max(1, min(days * 2, len(enriched_places)))]
 
-            # 4. Optimize route using only the agent-approved feasible places
+         
             _t0 = time.time()
             route_result = await mcp.call_tool(
                 "optimize_route",
@@ -291,9 +270,7 @@ Call select_feasible_places with your decision.
             print(f"[agent] final selected_places={len(selected_places)} "
                   f"day_plan_days={len(day_plan)} (requested days={days})")
 
-            # 5. Accommodation search per day — also parallelized, same
-            #    reasoning as step 2: these calls are independent of
-            #    each other.
+          
             accommodations = []
             if include_accommodation and travel_date:
                 _t0 = time.time()
@@ -331,9 +308,9 @@ Call select_feasible_places with your decision.
                 "excluded_places": excluded_places,
                 "selected_places": selected_places,
                 "route_info": route_info,
-                "route_coordinates": route_coordinates,   # → map එකට
+                "route_coordinates": route_coordinates,   
                 "day_plan": day_plan,
-                "accommodations": accommodations,           # → accommodation UI එකට
+                "accommodations": accommodations,          
             }
 
     def _add_days(self, date_string, days):

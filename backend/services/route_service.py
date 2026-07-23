@@ -5,12 +5,12 @@ from functools import lru_cache
 
 try:
     import requests
-except ImportError:  # pragma: no cover - environment fallback
+except ImportError:
     requests = None
 
 try:
     from dotenv import load_dotenv
-except ImportError:  # pragma: no cover - environment fallback
+except ImportError:
     def load_dotenv(*args, **kwargs):
         return False
 
@@ -55,15 +55,10 @@ def get_location_coords(name):
             set_cached_coords(name, lat, lng)
             return lat, lng
     except Exception as e:
-        # NOTE: this server runs under MCP stdio transport, where stdout
-        # is reserved for JSON-RPC protocol messages. A plain print()
-        # here would corrupt the stream and surface as "Connection
-        # closed" on the client side, so errors go to stderr instead.
+    
         print(f"Geocoding error for {name}: {e}", file=sys.stderr)
 
-    # Fallback: Colombo coordinates, so downstream route math still runs
-    # instead of crashing when a location can't be resolved. Not cached,
-    # since a transient failure shouldn't be remembered as a permanent miss.
+   
     return 6.9271, 79.8612
 
 

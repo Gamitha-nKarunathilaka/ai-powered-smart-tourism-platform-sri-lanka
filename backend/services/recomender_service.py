@@ -4,27 +4,27 @@ from functools import lru_cache
 
 try:
     import joblib
-except ImportError:  # pragma: no cover - environment fallback
+except ImportError:  
     joblib = None
 
 try:
     import numpy as np
-except ImportError:  # pragma: no cover - environment fallback
+except ImportError:  
     np = None
 
 try:
     import requests
-except ImportError:  # pragma: no cover - environment fallback
+except ImportError:  
     requests = None
 
 try:
     from sentence_transformers import SentenceTransformer
-except ImportError:  # pragma: no cover - environment fallback
+except ImportError:  
     SentenceTransformer = None
 
 try:
     from sklearn.metrics.pairwise import cosine_similarity
-except ImportError:  # pragma: no cover - environment fallback
+except ImportError:  
     cosine_similarity = None
 
 MODEL_PATH = os.path.join(
@@ -105,12 +105,6 @@ class TravelRecommenderService:
 
         try:
             model_data = joblib.load(MODEL_PATH)
-
-            # NOTE: keys below must match the notebook's save cell exactly:
-            # "location_df", "df_clean", "bert_model_name", "location_embeddings",
-            # "review_embeddings", "tfidf_vectorizer", "tfidf_matrix",
-            # "category_names", "category_descriptions", "category_embeddings",
-            # "category_vectorizer", "category_tfidf_matrix"
             self.locations = model_data["location_df"].reset_index(drop=True)
             self.reviews = model_data["df_clean"].reset_index(drop=True)
 
@@ -137,14 +131,12 @@ class TravelRecommenderService:
             )
 
             self.bert_model = SentenceTransformer(self.model_name)
-        except Exception as exc:  # pragma: no cover - environment fallback
+        except Exception as exc:  
             import sys
             print(f"Falling back to built-in recommendations: {exc}", file=sys.stderr)
             self.fallback_mode = True
 
-    # ------------------------------------------------------------
-    # Normalization helpers (ported from notebook)
-    # ------------------------------------------------------------
+
 
     def normalize_embeddings(self, embeddings):
         embeddings = np.asarray(embeddings, dtype=np.float32)
@@ -162,9 +154,7 @@ class TravelRecommenderService:
 
         return (scores - min_score) / (max_score - min_score)
 
-    # ------------------------------------------------------------
-    # Category detection (hybrid BERT + TF-IDF) - ported from notebook
-    # ------------------------------------------------------------
+
 
     def detect_preferred_categories_hybrid(self, query, top_k=2, threshold=0.28):
         """
@@ -207,10 +197,7 @@ class TravelRecommenderService:
 
         return detected_categories
 
-    # ------------------------------------------------------------
-    # Review snippet lookup - ported from notebook
-    # ------------------------------------------------------------
-
+  
     def get_best_review_snippet(self, place_name, city_name, query_vec):
         """
         Find the most relevant review snippet for the recommended place.
@@ -237,10 +224,7 @@ class TravelRecommenderService:
             return full_review[:180] + "..."
         return full_review
 
-    # ------------------------------------------------------------
-    # Geocoding (kept from original service.py - not present in notebook)
-    # ------------------------------------------------------------
-
+   
     @lru_cache(maxsize=100)
     def get_coords(self, place_name, city):
         """
@@ -268,18 +252,17 @@ class TravelRecommenderService:
         if requests is None:
             return None, None
 
-        # Try 1: place_name + city + country — most specific
+      
         coords = self._geocode_query(f"{place_name}, {city}, Sri Lanka")
         if coords != (None, None):
             return coords
 
-        # Try 2: place_name alone — looser match, catches cases where the
-        # compound query above is too specific for Open-Meteo to resolve
+     
         coords = self._geocode_query(f"{place_name}, Sri Lanka")
         if coords != (None, None):
             return coords
 
-        # Try 3: city alone — last resort, still useful for map placement
+    
         return self._geocode_query(f"{city}, Sri Lanka")
 
     def _precomputed_coords(self, place_name, city):
@@ -321,18 +304,13 @@ class TravelRecommenderService:
                 result = data["results"][0]
                 return float(result["latitude"]), float(result["longitude"])
         except Exception as e:
-            # Print to stderr, not stdout — stdout is reserved for MCP
-            # JSON-RPC protocol messages when running under stdio transport.
-            # A stray print() to stdout here can corrupt the protocol
-            # stream and cause the client to see "Connection closed".
+          
             import sys
             print(f"Geocoding error for '{query}': {e}", file=sys.stderr)
 
         return None, None
 
-    # ------------------------------------------------------------
-    # Fallback path (used when model/dependencies are unavailable)
-    # ------------------------------------------------------------
+  
 
     def _fallback_recommendations(self, query, top_n=10):
         query = str(query or "").lower()
@@ -367,9 +345,6 @@ class TravelRecommenderService:
         scored.sort(key=lambda item: item["match_percentage"], reverse=True)
         return scored[:max(1, int(top_n))]
 
-    # ------------------------------------------------------------
-    # Main scoring method - ported 1:1 from notebook's recommend_places()
-    # ------------------------------------------------------------
 
     def get_recommendations(
         self,
@@ -389,23 +364,21 @@ class TravelRecommenderService:
             return []
         query = str(query).strip()
 
-        # Query embedding
+    
         query_vec = self.bert_model.encode([query], convert_to_numpy=True)
         query_vec = self.normalize_embeddings(query_vec)
 
-        # BERT semantic similarity
+        
         bert_scores = np.dot(self.location_embeddings, query_vec.T).flatten()
         bert_scores = self.normalize_scores(bert_scores)
 
-        # TF-IDF keyword similarity
         query_tfidf = self.tfidf_vectorizer.transform([query])
         tfidf_scores = cosine_similarity(query_tfidf, self.tfidf_matrix).flatten()
         tfidf_scores = self.normalize_scores(tfidf_scores)
 
-        # Quality score
         quality_scores = self.normalize_scores(self.locations["quality_score"].values)
 
-        # Detect preferred categories
+     
         detected_categories = self.detect_preferred_categories_hybrid(query)
         preferred_categories = [
             item["category"] for item in detected_categories
@@ -422,7 +395,7 @@ class TravelRecommenderService:
         if len(detected_categories) > 0:
             category_scores = self.normalize_scores(category_scores)
 
-        # Final hybrid score
+       
         final_scores = (
             bert_scores * bert_weight +
             tfidf_scores * tfidf_weight +
@@ -431,15 +404,7 @@ class TravelRecommenderService:
         )
         final_scores = np.clip(final_scores, 0, 1)
 
-        # Category filtering — if a category was detected at all
-        # (i.e. it cleared the detect_preferred_categories_hybrid threshold,
-        # currently 0.28), always restrict results to that category.
-        # Previously this only kicked in above a separate, higher
-        # "strict_category_threshold" (0.45), which let unrelated but
-        # high quality_score places (e.g. Sigiriya, Mihintale) leak into
-        # results for a plain query like "I want a beach in Sri Lanka",
-        # since a single-category query often scores in the 0.30s and
-        # was falling through to the unrestricted blended ranking below.
+
         if preferred_categories:
             candidate_indices = self.locations[
                 self.locations["Location_Type"].isin(preferred_categories)

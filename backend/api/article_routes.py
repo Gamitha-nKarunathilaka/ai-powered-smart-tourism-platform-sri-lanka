@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 try:
     from bson import ObjectId
-except ImportError:  # pragma: no cover - environment fallback
+except ImportError: 
     class ObjectId(str):
         pass
 
@@ -12,7 +12,7 @@ from flask import Blueprint, jsonify, request
 try:
     from pymongo import DESCENDING
     from pymongo.errors import DuplicateKeyError
-except ImportError:  # pragma: no cover - environment fallback
+except ImportError: 
     DESCENDING = -1
 
     class DuplicateKeyError(Exception):

@@ -19,7 +19,7 @@ def search_booking_accommodations(destination, checkin_date, checkout_date, adul
     }
     
     try:
-        # 1. ApiDojo සෙවුම් රටාවට අනුව Destination ID එක සොයාගැනීම
+        
         loc_url = f"https://{BOOKING_API_HOST}/locations/auto-complete"
         loc_params = {"text": destination, "languagecode": "en-us"}
         
@@ -31,7 +31,7 @@ def search_booking_accommodations(destination, checkin_date, checkout_date, adul
         dest_id = loc_res[0].get("dest_id")
         dest_type = loc_res[0].get("dest_type")
         
-        # 2. හෝටල් සහ මිල ගණන් සෙවීම
+   
         search_url = f"https://{BOOKING_API_HOST}/properties/list"
         search_params = {
             "offset": "0",
@@ -47,14 +47,13 @@ def search_booking_accommodations(destination, checkin_date, checkout_date, adul
         hotels_res = requests.get(search_url, headers=headers, params=search_params, timeout=8).json()
         
         hotels = []
-        # ApiDojo ප්‍රතිචාර ව්‍යුහය (Response Structure) අනුව දත්ත පෙළගැස්වීම
+      
         for h in hotels_res.get('result', [])[:limit]:
             hotels.append({
                 "hotel_name": h.get('hotel_name'),
                 "price": f"LKR {h.get('min_total_price', 'N/A')}",
                 "review_score": h.get('review_score', 'N/A'),
                 "url": h.get('url', fallback_url),
-                # පින්තූරය මෙතැනින් ලබා ගනී 👇
                 "image_url": h.get('main_photo_url') or h.get('max_photo_url') or ""
             })
             

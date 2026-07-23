@@ -1,10 +1,9 @@
+{/* Header Section */}
 import { useState, useRef } from "react";
 import Draggable from "react-draggable";
-// 1. Icons tika import karaganna
 import { FaArrowUp, FaMapMarkerAlt, FaCarSide } from "react-icons/fa";
 import { MdTurnLeft, MdTurnRight, MdTurnSlightLeft, MdTurnSlightRight, MdRoundaboutRight } from "react-icons/md";
 
-// 2. Instruction eka balala hari icon eka dena function eka
 const getDirectionIcon = (instruction) => {
   if (!instruction) return <FaCarSide size={20} className="text-white/70" />;
   
@@ -18,7 +17,7 @@ const getDirectionIcon = (instruction) => {
   if (text.includes("arrive") || text.includes("destination")) return <FaMapMarkerAlt size={20} className="text-red-400" />;
   if (text.includes("head") || text.includes("straight") || text.includes("continue")) return <FaArrowUp size={20} className="text-[#22d3ee]" />;
   
-  // Wena mukuth nattam default car icon eka pennanawa
+
   return <FaCarSide size={20} className="text-white/70" />;
 };
 
@@ -65,14 +64,13 @@ export default function DirectionPanel({ routeSteps, activeStep, onFocusStep }) 
                     : "bg-white/5 border-white/5 hover:bg-white/10"
                 }`}
               >
-                {/* 3. Icon eka pennana box eka */}
+               
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                   activeStep === index ? "bg-[#f4c542]/20" : "bg-white/10"
                 }`}>
                   {getDirectionIcon(step.instruction)}
                 </div>
 
-                {/* 4. Text eka pennana kotasa */}
                 <div className="flex-1">
                   <p className="text-sm text-white font-medium">{step.instruction}</p>
                   <span className="text-xs text-white/60">{step.distance} • {step.duration}</span>

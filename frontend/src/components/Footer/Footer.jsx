@@ -4,12 +4,12 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    // Padding top (pt-20 -> pt-12) සහ bottom (pb-10 -> pb-6) අඩු කර ඇත
+   
     <footer className="relative bg-slate-900 text-white pt-12 pb-6 px-8 lg:px-16 shadow-[0_-15px_40px_rgba(0,0,0,0.5)]">
       
       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent"></div>
 
-      {/* Gap සහ margin bottom අඩු කර ඇත (mb-16 -> mb-10, gap-12 -> gap-8) */}
+      
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between gap-8 lg:gap-12 mb-10 relative z-10">
         
         {/* Brand Section */}

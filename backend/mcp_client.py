@@ -6,7 +6,7 @@ from pathlib import Path
 try:
     from mcp import ClientSession, StdioServerParameters
     from mcp.client.stdio import stdio_client
-except ImportError:  # pragma: no cover - environment fallback
+except ImportError: 
     ClientSession = None
     StdioServerParameters = None
     stdio_client = None

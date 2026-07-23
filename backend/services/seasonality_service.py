@@ -54,10 +54,6 @@ def get_seasonality_service(place_name, city=None, category=None, location=None,
     except ValueError:
         return {"avg_rainfall_mm": 0, "score": 70, "note": f"Invalid travel_date format: {travel_date}"}
 
-    # Try the most specific query first (place name), then fall back to
-    # city — mirrors the retry approach used in recomender_service.py's
-    # get_coords(), since Open-Meteo's fuzzy match often fails on
-    # lesser-known place names but succeeds on the city name.
     search_query = f"{place_name}, Sri Lanka" if place_name else None
     lat, lon = (None, None)
 
@@ -82,8 +78,7 @@ def get_seasonality_service(place_name, city=None, category=None, location=None,
 
         avg_rainfall = sum(rainfall_values) / len(rainfall_values) if rainfall_values else 0
 
-        # Simple suitability score: heavier historical rainfall lowers the
-        # score. 0mm/day -> 100, 20mm/day or more -> floor of 40.
+    
         score = max(40, round(100 - (avg_rainfall * 3), 1))
 
         return {
