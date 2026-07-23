@@ -11,6 +11,7 @@ import "leaflet/dist/leaflet.css";
  * - Displays "My Custom Trip" in the Itinerary tab
  * - Calls FastAPI backend /agent-plan
  * - Fallback call to /recommend if /agent-plan is not available
+ * - UI Updated with Hierarchy Colors (Gold Primary CTA, Aqua Secondary CTA)
  */
 
 const API_BASE_URL =
@@ -275,18 +276,18 @@ function mapApiPlacesToStops(apiPlaces = []) {
       match: Math.round(
         safeNumber(
           place.match_percentage ??
-            place.final_score ??
-            place.match ??
-            place.score,
+          place.final_score ??
+          place.match ??
+          place.score,
           80
         )
       ),
       match_percentage: Math.round(
         safeNumber(
           place.match_percentage ??
-            place.final_score ??
-            place.match ??
-            place.score,
+          place.final_score ??
+          place.match ??
+          place.score,
           80
         )
       ),
@@ -368,7 +369,7 @@ export default function CeylonExplorer() {
   );
   const [dayPlan, setDayPlan] = useState([]);
   const [routeInfo, setRouteInfo] = useState(null);
-  
+
   // Custom user trip state for "Add to Trip"
   const [myTrip, setMyTrip] = useState([]);
 
@@ -598,8 +599,8 @@ export default function CeylonExplorer() {
       setRouteCoordinates(getRouteCoordinatesFromApiResponse(data));
       setAgentSummary(
         data.summary ||
-          data.agent_summary ||
-          "AI optimized travel plan generated successfully."
+        data.agent_summary ||
+        "AI optimized travel plan generated successfully."
       );
       setDayPlan(data.day_plan || data.itinerary || []);
       setRouteInfo(data.route_info || data.optimized_route || null);
@@ -760,11 +761,10 @@ export default function CeylonExplorer() {
                   <button
                     key={item.id}
                     onClick={() => toggleInterest(item.id)}
-                    className={`h-[72px] rounded-xl border flex flex-col items-center justify-center gap-2 transition ${
-                      active
-                        ? "bg-white/[0.09] border-cyan-400/50"
+                    className={`h-[72px] rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${active
+                        ? "bg-cyan-500/20 border-cyan-400 text-cyan-100"
                         : "bg-white/[0.05] border-white/10 hover:bg-white/[0.08]"
-                    }`}
+                      }`}
                   >
                     <span className="text-2xl">{item.emoji}</span>
                     <span className="text-[10px] leading-tight font-bold text-white/80">
@@ -782,23 +782,23 @@ export default function CeylonExplorer() {
                 <button
                   key={style}
                   onClick={() => setTravelStyle(style)}
-                  className={`rounded-full py-2 text-xs border transition ${
-                    travelStyle === style
-                      ? "border-cyan-400 bg-cyan-400/10 text-white"
-                      : "border-white/15 text-white/60"
-                  }`}
+                  className={`rounded-full py-2 text-xs border transition-all ${travelStyle === style
+                      ? "border-cyan-400 bg-cyan-500/20 text-cyan-100"
+                      : "border-white/15 text-white/60 hover:bg-white/[0.05]"
+                    }`}
                 >
                   {style}
                 </button>
               ))}
             </div>
 
+            {/* PRIMARY CTA - GOLD BUTTON */}
             <button
               onClick={handleGenerateTrip}
               disabled={loading}
-              className="w-full h-12 rounded-lg bg-gradient-to-r from-[#d6a72d] to-[#f6d86b] text-[#130d03] text-xs tracking-[2px] font-bold mb-4 disabled:opacity-60"
+              className="bg-[#FFC107] text-[#051225] w-full border border-[#FFC107] px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest flex justify-center items-center hover:bg-yellow-400 transition-colors gap-2 mb-4"
             >
-              {loading ? "GENERATING..." : "GENERATE AI ITINERARY"}
+              {loading ? "GENERATING..." : "Generate AI Itinerary"}
             </button>
 
             {error && (
@@ -818,9 +818,8 @@ export default function CeylonExplorer() {
                 <button
                   key={`${stop.title}-${i}`}
                   onClick={() => flyToStop(i)}
-                  className={`w-full flex items-center gap-2 px-2 py-3 rounded-lg border-b border-white/[0.06] last:border-none text-left ${
-                    activeStop === i ? "bg-white/[0.07]" : "hover:bg-white/[0.04]"
-                  }`}
+                  className={`w-full flex items-center gap-2 px-2 py-3 rounded-lg border-b border-white/[0.06] last:border-none text-left ${activeStop === i ? "bg-white/[0.07]" : "hover:bg-white/[0.04]"
+                    }`}
                 >
                   <span
                     className="w-2 h-2 rounded-full"
@@ -836,7 +835,7 @@ export default function CeylonExplorer() {
 
             <button
               onClick={() => setActiveTab("itinerary")}
-              className="w-full mt-3 h-10 rounded-lg border border-white/10 text-xs hover:bg-white/10"
+              className="w-full mt-3 h-10 rounded-lg border border-white/10 text-xs hover:bg-white/10 transition-colors"
             >
               View Full Itinerary →
             </button>
@@ -851,11 +850,10 @@ export default function CeylonExplorer() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`min-w-max flex items-center gap-3 px-5 lg:px-8 h-[54px] text-xs font-bold tracking-[1.5px] border-b-2 transition ${
-                      activeTab === tab.id
+                    className={`min-w-max flex items-center gap-3 px-5 lg:px-8 h-[54px] text-xs font-bold tracking-[1.5px] border-b-2 transition ${activeTab === tab.id
                         ? "border-[#f4c542] text-white"
                         : "border-transparent text-white/60 hover:text-white"
-                    }`}
+                      }`}
                   >
                     <span className="text-xl text-[#f4c542]">{tab.icon}</span>
                     {tab.label}
@@ -870,8 +868,9 @@ export default function CeylonExplorer() {
 
                   <div className="relative z-[500] grid lg:grid-cols-[390px_1fr] h-full">
                     <div className="p-6 lg:p-8">
-                      <h1 className="font-serif text-4xl lg:text-5xl font-bold leading-none">
-                        Ceylon <span className="text-[#f4c542]">Explorer</span>
+                      <h1 className="text-5xl lg:text-6xl font-serif text-white leading-tight mb-4 drop-shadow-md">
+                        Explore <br />
+                        <span className="text-cyan-400 font-light">Sri Lanka</span>
                       </h1>
 
                       <p className="mt-5 text-white/80">
@@ -889,7 +888,7 @@ export default function CeylonExplorer() {
 
                       <button
                         onClick={() => setActiveTab("map")}
-                        className="mt-5 rounded-lg border border-white/25 px-6 py-3 text-sm font-semibold hover:bg-white/10"
+                        className="mt-5 rounded-lg border border-cyan-400/50 text-cyan-400 px-6 py-3 text-sm font-semibold hover:bg-cyan-400/10 transition-colors"
                       >
                         View Full Map ↗
                       </button>
@@ -1020,10 +1019,10 @@ function Recommendations({ stops, activeStop, onView, myTrip, onToggleTrip }) {
         </div>
 
         <div className="flex gap-3">
-          <button className="rounded-lg border border-white/15 px-5 py-3 text-sm">
+          <button className="rounded-lg border border-cyan-400/50 text-cyan-400 px-5 py-3 text-sm hover:bg-cyan-400/10 transition-colors">
             Filter ⚱
           </button>
-          <button className="rounded-lg border border-white/15 px-5 py-3 text-sm">
+          <button className="rounded-lg border border-cyan-400/50 text-cyan-400 px-5 py-3 text-sm hover:bg-cyan-400/10 transition-colors">
             Sort by: Best Match ⌄
           </button>
         </div>
@@ -1051,18 +1050,16 @@ function Recommendations({ stops, activeStop, onView, myTrip, onToggleTrip }) {
 
 function RecommendationCard({ stop, active, onView, topPick, isAdded, onToggleTrip }) {
   const weatherText = stop.weather
-    ? `${stop.weather.condition || "Weather"} ${
-        stop.weather.temperature ? `${Math.round(stop.weather.temperature)}°C` : ""
-      }`
+    ? `${stop.weather.condition || "Weather"} ${stop.weather.temperature ? `${Math.round(stop.weather.temperature)}°C` : ""
+    }`
     : "Weather not checked";
 
   return (
     <div
-      className={`grid grid-cols-1 xl:grid-cols-[230px_1fr_120px_170px_180px_40px] gap-5 rounded-2xl border p-3 lg:p-4 bg-white/[0.04] transition ${
-        active
+      className={`grid grid-cols-1 xl:grid-cols-[230px_1fr_120px_170px_180px_40px] gap-5 rounded-2xl border p-3 lg:p-4 bg-white/[0.04] transition ${active
           ? "border-[#f4c542]/70"
           : "border-white/10 hover:border-white/25"
-      }`}
+        }`}
     >
       <div className="relative h-[135px] rounded-xl overflow-hidden bg-white/10">
         <img
@@ -1120,17 +1117,17 @@ function RecommendationCard({ stop, active, onView, topPick, isAdded, onToggleTr
       <div className="flex xl:flex-col justify-center gap-3">
         <button
           onClick={onView}
-          className="rounded-lg border border-white/15 px-4 py-3 text-sm font-bold hover:bg-white/10"
+          className="rounded-lg border border-cyan-400/50 text-cyan-400 px-4 py-3 text-sm font-bold hover:bg-cyan-400/10 transition-colors"
         >
           ⌖ View on Map
         </button>
+        {/* SECONDARY CTA - AQUA SOLID BUTTON */}
         <button
           onClick={onToggleTrip}
-          className={`rounded-lg px-4 py-3 text-sm font-bold transition-all ${
-            isAdded
-              ? "bg-white/10 text-white border border-white/20 hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-200"
-              : "bg-gradient-to-r from-[#d6a72d] to-[#f6d86b] text-black"
-          }`}
+          className={`rounded-lg px-4 py-3 text-[11px] font-bold uppercase tracking-wider transition-all w-full xl:w-auto ${isAdded
+              ? "bg-transparent text-red-300 border border-red-500/50 hover:bg-red-500/20"
+              : "bg-cyan-400 text-[#071a33] border border-cyan-400 hover:bg-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.2)]"
+            }`}
         >
           {isAdded ? "Remove -" : "Add to Trip +"}
         </button>

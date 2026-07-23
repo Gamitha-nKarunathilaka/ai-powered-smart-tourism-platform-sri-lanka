@@ -20,11 +20,24 @@ ORS_API_KEY = os.getenv("OPENROUTESERVICE_API_KEY")
 ORS_BASE_URL = os.getenv("ORS_BASE_URL", "https://api.heigit.org/ors/v2")
 
 
+from .geocode_cache import get_cached_coords, set_cached_coords
+
+
 @lru_cache(maxsize=50)
 def get_location_coords(name):
     """
     Open-Meteo Geocoding API හරහා ස්ථානයක අක්ෂාංශ/දේශාංශ ලබාගනී.
+
+    Lookup order: hardcoded common-city list → persistent JSON cache
+    (survives restarts) → live API call (result then written to the
+    persistent cache). The in-memory lru_cache above only helps within
+    a single server run; the persistent cache is what avoids repeat API
+    calls across restarts.
     """
+    cached = get_cached_coords(name)
+    if cached is not None:
+        return cached
+
     if requests is None:
         return 6.9271, 79.8612
 
@@ -38,7 +51,9 @@ def get_location_coords(name):
 
         if "results" in data and len(data["results"]) > 0:
             res = data["results"][0]
-            return float(res["latitude"]), float(res["longitude"])
+            lat, lng = float(res["latitude"]), float(res["longitude"])
+            set_cached_coords(name, lat, lng)
+            return lat, lng
     except Exception as e:
         # NOTE: this server runs under MCP stdio transport, where stdout
         # is reserved for JSON-RPC protocol messages. A plain print()
@@ -47,7 +62,8 @@ def get_location_coords(name):
         print(f"Geocoding error for {name}: {e}", file=sys.stderr)
 
     # Fallback: Colombo coordinates, so downstream route math still runs
-    # instead of crashing when a location can't be resolved.
+    # instead of crashing when a location can't be resolved. Not cached,
+    # since a transient failure shouldn't be remembered as a permanent miss.
     return 6.9271, 79.8612
 
 

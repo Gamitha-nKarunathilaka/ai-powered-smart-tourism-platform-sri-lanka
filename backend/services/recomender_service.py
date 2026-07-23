@@ -175,7 +175,6 @@ class TravelRecommenderService:
         if not query or not str(query).strip():
             return []
 
-
         query = str(query).strip()
 
         # BERT semantic category score
@@ -247,6 +246,13 @@ class TravelRecommenderService:
         """
         Geocoding API හරහා අක්ෂාංශ/දේශාංශ ලබාගනී.
 
+        FASTEST PATH: if the model .pkl was built with precomputed
+        "lat"/"lng" columns on location_df (see the notebook's
+        "precompute coordinates" cell), those are used directly — zero
+        network calls at request time, for all 76 known locations.
+        This only falls through to the live API for places missing
+        precomputed coordinates (e.g. an older pkl without that step).
+
         NOTE: previously this built the URL with an f-string containing
         unescaped spaces/commas (e.g. "Mirissa Beach, Mirissa, Sri Lanka"),
         which either failed the request outright or didn't match anything
@@ -255,6 +261,10 @@ class TravelRecommenderService:
         handles URL-encoding automatically, and a simpler fallback query
         (place_name alone) is tried if the compound query finds nothing.
         """
+        precomputed = self._precomputed_coords(place_name, city)
+        if precomputed is not None:
+            return precomputed
+
         if requests is None:
             return None, None
 
@@ -271,6 +281,32 @@ class TravelRecommenderService:
 
         # Try 3: city alone — last resort, still useful for map placement
         return self._geocode_query(f"{city}, Sri Lanka")
+
+    def _precomputed_coords(self, place_name, city):
+        """
+        Looks up precomputed coordinates from self.locations, if the
+        DataFrame has "lat"/"lng" columns (added by the notebook's
+        one-time geocoding step). Returns (lat, lng) or None if either
+        the columns don't exist or the specific row has no value.
+        """
+        if "lat" not in self.locations.columns or "lng" not in self.locations.columns:
+            return None
+
+        match = self.locations[
+            (self.locations["Location_Name"] == place_name) &
+            (self.locations["Located_City"] == city)
+        ]
+
+        if match.empty:
+            return None
+
+        row = match.iloc[0]
+        lat, lng = row.get("lat"), row.get("lng")
+
+        if lat is None or lng is None or (isinstance(lat, float) and np.isnan(lat)):
+            return None
+
+        return float(lat), float(lng)
 
     def _geocode_query(self, query):
         try:
@@ -298,7 +334,7 @@ class TravelRecommenderService:
     # Fallback path (used when model/dependencies are unavailable)
     # ------------------------------------------------------------
 
-    def _fallback_recommendations(self, query, top_n=5):
+    def _fallback_recommendations(self, query, top_n=10):
         query = str(query or "").lower()
         scored = []
 

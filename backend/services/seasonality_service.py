@@ -2,6 +2,8 @@ import requests
 from datetime import datetime
 from functools import lru_cache
 
+from .geocode_cache import get_cached_coords, set_cached_coords
+
 
 @lru_cache(maxsize=200)
 def _geocode(query, timeout=5):
@@ -11,10 +13,14 @@ def _geocode(query, timeout=5):
     containing raw spaces via "+", which is fragile for multi-word place
     names). Returns (lat, lon) or (None, None).
 
-    Cached because the same cities (Colombo, Bentota, etc.) repeat across
-    many candidate places within a single planning request — without
-    caching, each one triggers a fresh external API round trip.
+    Checks the shared persistent cache (hardcoded common cities +
+    JSON file surviving restarts) before ever touching the network —
+    the same cities repeat across many candidate places within a single
+    planning request, and across separate requests over time.
     """
+    cached = get_cached_coords(query)
+    if cached is not None:
+        return cached
     try:
         response = requests.get(
             "https://geocoding-api.open-meteo.com/v1/search",
@@ -25,7 +31,9 @@ def _geocode(query, timeout=5):
 
         results = data.get("results") or []
         if len(results) > 0:
-            return results[0]["latitude"], results[0]["longitude"]
+            lat, lon = results[0]["latitude"], results[0]["longitude"]
+            set_cached_coords(query, lat, lon)
+            return lat, lon
     except Exception:
         pass
 

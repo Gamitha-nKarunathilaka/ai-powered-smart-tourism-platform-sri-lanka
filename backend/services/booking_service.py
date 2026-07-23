@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BOOKING_API_KEY = os.getenv("RAPIDAPI_BOOKING_KEY")
-BOOKING_API_HOST = os.getenv("RAPIDAPI_BOOKING_HOST", "apidojo-booking-v1.p.rapidapi.com")
+BOOKING_API_KEY = os.getenv("RAPID_API_KEY")
+BOOKING_API_HOST = os.getenv("RAPID_API_HOST", "apidojo-booking-v1.p.rapidapi.com")
 
 def search_booking_accommodations(destination, checkin_date, checkout_date, adults=2, rooms=1, limit=2):
     fallback_url = f"https://www.booking.com/searchresults.html?ss={destination}"
@@ -53,7 +53,9 @@ def search_booking_accommodations(destination, checkin_date, checkout_date, adul
                 "hotel_name": h.get('hotel_name'),
                 "price": f"LKR {h.get('min_total_price', 'N/A')}",
                 "review_score": h.get('review_score', 'N/A'),
-                "url": h.get('url', fallback_url)
+                "url": h.get('url', fallback_url),
+                # පින්තූරය මෙතැනින් ලබා ගනී 👇
+                "image_url": h.get('main_photo_url') or h.get('max_photo_url') or ""
             })
             
         return {

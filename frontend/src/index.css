@@ -1,4 +1,3 @@
-
 @import url("https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Montserrat:wght@300;400;500;600;700;800&display=swap");
 
 
@@ -6,7 +5,11 @@
 @import "tailwindcss";
 @theme {
   --color-background: #0f172a;
-  
+  --color-foreground: #ffffff;
+  --color-primary: #22d3ee;
+  --color-card: rgba(255, 255, 255, 0.05);
+  --color-border: rgba(255, 255, 255, 0.1);
+
   --font-serif: "Merriweather", serif;
 }
 

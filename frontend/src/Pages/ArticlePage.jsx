@@ -236,7 +236,7 @@ export default function ArticlePage() {
 
   if (error || !article) {
     return (
-      <div className="grid min-h-screen place-items-center px-6 text-white">
+      <div className="grid min-h-screen place-items-center bg-background px-6 text-foreground">
         <div className="max-w-lg text-center">
           <p className="text-xs font-black uppercase tracking-[0.22em] text-red-300">
             Article Error
@@ -246,13 +246,13 @@ export default function ArticlePage() {
             Article could not be loaded
           </h1>
 
-          <p className="mt-4 text-white/55">
+          <p className="mt-4 text-foreground/55">
             {error || "The requested article was not found."}
           </p>
 
           <Link
             to="/blog"
-            className="mt-7 inline-flex rounded-full border border-cyan-300/30 bg-cyan-300/10 px-6 py-3 text-xs font-black uppercase tracking-[0.16em] text-cyan-200"
+            className="mt-7 inline-flex rounded-full border border-primary/30 bg-primary/10 px-6 py-3 text-xs font-black uppercase tracking-[0.16em] text-primary"
           >
             Back to Blog
           </Link>
@@ -262,10 +262,10 @@ export default function ArticlePage() {
   }
 
   return (
-    <article className="min-h-screen overflow-x-hidden  text-white">
+    <article className="min-h-screen overflow-x-hidden bg-background text-foreground">
       <div
         ref={progressRef}
-        className="fixed left-0 top-0 z-[1200] h-[3px] w-full origin-left scale-x-0 bg-cyan-300 shadow-[0_0_18px_rgba(34,211,238,0.9)]"
+        className="fixed left-0 top-0 z-[1200] h-[3px] w-full origin-left scale-x-0 bg-primary shadow-[0_0_18px_rgba(34,211,238,0.9)]"
       />
 
       <ArticleHero
@@ -279,11 +279,11 @@ export default function ArticlePage() {
         scrollHintRef={scrollHintRef}
       />
 
-      <section className="border-b border-white/10 bg-[#0a1730]/95 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-center gap-3 px-6 py-5 text-xs text-white/40 lg:px-8">
+      <section className="border-b border-border bg-background/95 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-center gap-3 px-6 py-5 text-xs text-foreground/40 lg:px-8">
           <Link
             to="/"
-            className="transition hover:text-cyan-300"
+            className="transition hover:text-primary"
           >
             Home
           </Link>
@@ -292,14 +292,14 @@ export default function ArticlePage() {
 
           <Link
             to="/blog"
-            className="transition hover:text-cyan-300"
+            className="transition hover:text-primary"
           >
             Travel Insights
           </Link>
 
           <span>›</span>
 
-          <span className="max-w-[360px] truncate text-white/65">
+          <span className="max-w-[360px] truncate text-foreground/65">
             {article.title}
           </span>
         </div>
@@ -308,7 +308,7 @@ export default function ArticlePage() {
       <div className="mx-auto grid max-w-6xl justify-center gap-8 px-6 py-20 lg:grid-cols-[64px_minmax(0,880px)_64px] lg:px-8 lg:py-28">
         <aside className="hidden lg:block">
           <div className="sticky top-28">
-            <p className="mb-5 text-center text-sm text-white/55">
+            <p className="mb-5 text-center text-sm text-foreground/55">
               Share
             </p>
 
@@ -322,7 +322,7 @@ export default function ArticlePage() {
         <main className="mx-auto w-full max-w-[880px]">
           <Reveal>
             <div className="text-center">
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-300">
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-primary">
                 {article.category}
               </p>
 
@@ -331,7 +331,7 @@ export default function ArticlePage() {
               </h2>
             </div>
 
-            <p className="mx-auto mt-10 max-w-3xl text-center text-lg leading-9 text-white/70">
+            <p className="mx-auto mt-10 max-w-3xl text-center text-lg leading-9 text-foreground/70">
               {article.intro}
             </p>
 
@@ -339,7 +339,7 @@ export default function ArticlePage() {
               {article.paragraphs?.map((paragraph, index) => (
                 <div
                   key={`${paragraph}-${index}`}
-                  className="text-lg leading-9 text-white/70 [&>h2]:font-serif [&>h2]:text-3xl [&>h2]:font-semibold [&>h2]:text-cyan-300 [&>h2]:mt-10 [&>h2]:mb-4 [&>h3]:font-serif [&>h3]:text-2xl [&>h3]:text-cyan-100 [&>h3]:mt-8 [&>h3]:mb-3 [&>p]:mb-5 [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:mb-5 [&>ul>li]:mb-2 [&>ul>li>b]:text-cyan-200"
+                  className="text-lg leading-9 text-foreground/70 [&>h2]:font-serif [&>h2]:text-3xl [&>h2]:font-semibold [&>h2]:text-primary [&>h2]:mt-10 [&>h2]:mb-4 [&>h3]:font-serif [&>h3]:text-2xl [&>h3]:text-cyan-100 [&>h3]:mt-8 [&>h3]:mb-3 [&>p]:mb-5 [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:mb-5 [&>ul>li]:mb-2 [&>ul>li>b]:text-cyan-200"
                   dangerouslySetInnerHTML={{ __html: paragraph }}
                 />
               ))}
@@ -359,11 +359,11 @@ export default function ArticlePage() {
           </div>
 
           <Reveal className="mt-24">
-            <section className="relative overflow-hidden rounded-[30px] border border-cyan-300/25 bg-cyan-400/[0.06] p-8 text-center shadow-[0_0_65px_rgba(34,211,238,0.15)] md:p-12">
-              <div className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-cyan-300/20 blur-[85px]" />
+            <section className="relative overflow-hidden rounded-[30px] border border-primary/25 bg-primary/[0.06] p-8 text-center shadow-[0_0_65px_rgba(34,211,238,0.15)] md:p-12">
+              <div className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-primary/20 blur-[85px]" />
               <div className="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-blue-500/15 blur-[95px]" />
 
-              <p className="relative text-xs font-black uppercase tracking-[0.22em] text-cyan-300">
+              <p className="relative text-xs font-black uppercase tracking-[0.22em] text-primary">
                 Plan Your Journey
               </p>
 
@@ -371,24 +371,24 @@ export default function ArticlePage() {
                 Turn this inspiration into your own Sri Lanka itinerary
               </h3>
 
-              <p className="relative mx-auto mt-5 max-w-2xl text-base leading-7 text-white/60">
+              <p className="relative mx-auto mt-5 max-w-2xl text-base leading-7 text-foreground/60">
                 Use the AI trip planner to select destinations, organize the
                 route, estimate travel time, and build a more efficient journey.
               </p>
 
               <Link
                 to="/plan-trip"
-                className="relative mt-8 inline-flex items-center gap-3 rounded-full bg-cyan-300 px-7 py-3.5 text-xs font-black uppercase tracking-[0.16em] text-[#061225] shadow-[0_0_28px_rgba(34,211,238,0.48)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_0_44px_rgba(34,211,238,0.75)]"
+                className="relative mt-8 inline-flex items-center gap-3 rounded-full bg-primary px-7 py-3.5 text-xs font-black uppercase tracking-[0.16em] text-background shadow-[0_0_28px_rgba(34,211,238,0.48)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_0_44px_rgba(34,211,238,0.75)]"
               >
                 Plan Your Trip →
               </Link>
             </section>
           </Reveal>
 
-          <div className="mt-16 flex flex-wrap items-center justify-center gap-6 border-t border-white/10 pt-9">
+          <div className="mt-16 flex flex-wrap items-center justify-center gap-6 border-t border-border pt-9">
             <Link
               to="/blog"
-              className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300"
+              className="text-xs font-black uppercase tracking-[0.18em] text-primary"
             >
               ← Back to All Articles
             </Link>

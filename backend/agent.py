@@ -1,4 +1,4 @@
-import asyncio, json
+import asyncio, json, time
 import os
 
 try:
@@ -128,6 +128,8 @@ class TravelAgent:
                                   include_weather, travel_style,
                                   include_accommodation):
 
+        _plan_start = time.time()
+
         # Make sure we always ask the recommender for enough raw
         # candidates to cover the whole trip, even for long (14-20 day)
         # itineraries. days * 5 gives headroom for places that get
@@ -137,12 +139,14 @@ class TravelAgent:
         async with MCPTravelClient() as mcp:
 
             # 1. ML model recommendations
+            _t0 = time.time()
             recommendation_result = await mcp.call_tool(
                 "recommend_places",
                 {"query": query, "top_n": effective_top_n,
                  "travel_date": travel_date, "include_weather": False}
             )
             candidates = recommendation_result.get("recommendations", [])
+            print(f"[TIMING] recommend_places: {time.time() - _t0:.2f}s ({len(candidates)} candidates)")
 
             print(f"[agent] days={days} effective_top_n={effective_top_n} "
                   f"candidates_returned={len(candidates)}")
@@ -154,11 +158,13 @@ class TravelAgent:
             #    sequential awaiting could take 45-90+ seconds; running
             #    them concurrently brings it down to roughly the time of
             #    the single slowest call.
+            _t0 = time.time()
             enriched_places = await asyncio.gather(*[
                 self._enrich_place(mcp, place, travel_date, include_weather)
                 for place in candidates
             ])
             enriched_places = list(enriched_places)
+            print(f"[TIMING] enrichment (seasonality+weather, {len(candidates)} places): {time.time() - _t0:.2f}s")
 
             # 3. AGENT DECISION: Gemini reasons over seasonality+weather+day budget
             #    to decide which places are actually feasible to visit
@@ -197,8 +203,10 @@ Call select_feasible_places with your decision.
 """
             if model is not None:
                 try:
+                    _t0 = time.time()
                     chat = model.start_chat()
                     response = chat.send_message(agent_prompt)
+                    print(f"[TIMING] Gemini call: {time.time() - _t0:.2f}s")
 
                     fc = response.candidates[0].content.parts[0].function_call
                     selected_names = list(fc.args.get("selected_place_names", []))
@@ -262,6 +270,7 @@ Call select_feasible_places with your decision.
                 feasible_places = enriched_places[:max(1, min(days * 2, len(enriched_places)))]
 
             # 4. Optimize route using only the agent-approved feasible places
+            _t0 = time.time()
             route_result = await mcp.call_tool(
                 "optimize_route",
                 {"start_location": start_location, "end_location": end_location,
@@ -269,6 +278,8 @@ Call select_feasible_places with your decision.
                  "daily_max_travel_hours": daily_max_travel_hours,
                  "transport_type": transport_type}
             )
+            print(f"[TIMING] optimize_route: {time.time() - _t0:.2f}s")
+
             selected_places = route_result.get("selected_places", [])
             if not selected_places and feasible_places:
                 selected_places = feasible_places[:max(1, min(days, len(feasible_places)))]
@@ -285,6 +296,8 @@ Call select_feasible_places with your decision.
             #    each other.
             accommodations = []
             if include_accommodation and travel_date:
+                _t0 = time.time()
+
                 async def _fetch_accommodation(place):
                     place_day = int(place.get("day", 1))
                     destination = place.get("city") or place.get("place_name")
@@ -309,6 +322,9 @@ Call select_feasible_places with your decision.
                 accommodations = list(await asyncio.gather(*[
                     _fetch_accommodation(place) for place in selected_places
                 ]))
+                print(f"[TIMING] accommodation search ({len(selected_places)} places): {time.time() - _t0:.2f}s")
+
+            print(f"[TIMING] TOTAL: {time.time() - _plan_start:.2f}s")
 
             return {
                 "agent_reasoning": reasoning,
