@@ -395,7 +395,7 @@ export default function ArticleFormPage() {
                 <div className="md:col-span-2">
                   <Label>Hero Image URL</Label>
                   <Input
-                    type="url"
+                    type="text"
                     name="hero_image"
                     value={form.hero_image}
                     onChange={updateField}
@@ -630,7 +630,7 @@ export default function ArticleFormPage() {
                       <div className="md:col-span-2">
                         <Label>Image URL</Label>
                         <Input
-                          type="url"
+                          type="text"
                           value={section.image}
                           onChange={(event) =>
                             updateSection(

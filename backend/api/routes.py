@@ -24,6 +24,7 @@ except ImportError:
 from core.collections import (
     articles_collection,
     categories_collection,
+    reviews_collection,
 )
 from core.recommender import recommender_instance
 
@@ -384,3 +385,76 @@ def get_categories():
         serialize_value(category)
         for category in categories
     ])
+@api_bp.route("/reviews", methods=["GET"])
+def get_reviews():
+    """Fetch all reviews, sorted by newest first."""
+    reviews = reviews_collection.find().sort(
+        "created_at",
+        DESCENDING,
+    )
+
+    result = [
+        serialize_value(review)
+        for review in reviews
+    ]
+
+    return jsonify(result)
+
+
+@api_bp.route("/reviews", methods=["POST"])
+def create_review():
+    """Create a new review (testimonial)."""
+    data = request.get_json(silent=True)
+
+    if not data:
+        return jsonify({
+            "error": "Review data is required"
+        }), 400
+
+    required_fields = [
+        "name",
+        "country",
+        "rating",
+        "text",
+    ]
+
+    missing_fields = [
+        field
+        for field in required_fields
+        if not data.get(field)
+    ]
+
+    if missing_fields:
+        return jsonify({
+            "error": "Required fields are missing",
+            "fields": missing_fields,
+        }), 400
+
+    now = datetime.now(timezone.utc)
+
+    # Avatar image එක Frontend එකෙන් එව්වේ නැත්නම් හිස්ව තබන්න
+    avatar_url = data.get("img") or f"https://ui-avatars.com/api/?name={data['name'].replace(' ', '+')}&background=06b6d4&color=fff"
+
+    review = {
+        "name": data["name"].strip(),
+        "country": data["country"].strip(),
+        "rating": int(data["rating"]),
+        "text": data["text"].strip(),
+        "img": avatar_url,
+        "created_at": now,
+    }
+
+    try:
+        result = reviews_collection.insert_one(review)
+    except Exception as e:
+         return jsonify({
+            "error": f"Failed to save review: {str(e)}"
+        }), 500
+
+    saved_review = reviews_collection.find_one({
+        "_id": result.inserted_id
+    })
+
+    return jsonify(
+        serialize_value(saved_review)
+    ), 201

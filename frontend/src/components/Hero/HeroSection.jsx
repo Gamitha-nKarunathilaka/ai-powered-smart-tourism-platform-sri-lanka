@@ -7,11 +7,17 @@ import trainImg from '../../assets/nine-arches.png';
 import leopardImg from '../../assets/leopard.png';
 import bgImage from '../../assets/map.png';
 
+import DayNightHeroBackground from './DayNightHeroBackground';
+
 const HeroSection = () => {
   return (
     <section className="relative pt-28 pb-8 px-6 lg:px-12 min-h-screen flex flex-col justify-between overflow-hidden bg-slate-900">
-      
-      {/* NEW: Starry / Dot Pattern Background */}
+
+      {/* Day/Night cycle sky — sun/moon arc, color-shifting sky, stars, clouds, clock badge.
+          Sits as the base layer; internal dot grid is off since the section already has its own below. */}
+      <DayNightHeroBackground mode="real" clockTopClass="top-18" showDotGrid={false} />
+
+      {/* Starry / Dot Pattern Background */}
       <div 
         className="absolute inset-0 z-0 pointer-events-none opacity-20 mix-blend-screen"
         style={{

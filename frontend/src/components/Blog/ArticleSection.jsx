@@ -83,8 +83,12 @@ function ParallaxImage({ src, alt }) {
 }
 
 export default function ArticleSection({ section }) {
+  // Overview section එකක්ද කියලා අඳුරගන්නවා
+  const isOverview = section.label === "Overview" || section.heading === "Overview";
+
   return (
     <section>
+      {/* පින්තූරය හැමවෙලේම පෙන්වනවා */}
       {section.image && (
         <ParallaxImage
           src={section.image}
@@ -92,22 +96,25 @@ export default function ArticleSection({ section }) {
         />
       )}
 
-      <div className="mx-auto max-w-3xl text-center">
-        {section.label && (
-          <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300 drop-shadow-[0_0_10px_rgba(34,211,238,0.65)]">
-            {section.label}
-          </p>
-        )}
+      {/* Overview එකක් නෙමෙයි නම් විතරක් අකුරු ටික පෙන්වනවා */}
+      {!isOverview && (
+        <div className="mx-auto max-w-3xl text-center">
+          {section.label && (
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300 drop-shadow-[0_0_10px_rgba(34,211,238,0.65)]">
+              {section.label}
+            </p>
+          )}
 
-        <h3 className="mt-4 font-serif text-4xl font-semibold drop-shadow-[0_0_16px_rgba(34,211,238,0.15)] md:text-5xl">
-          {section.heading}
-        </h3>
+          <h3 className="mt-4 font-serif text-4xl font-semibold drop-shadow-[0_0_16px_rgba(34,211,238,0.15)] md:text-5xl">
+            {section.heading}
+          </h3>
 
-        <div
-          className="mt-6 text-lg leading-9 text-white/70 text-left [&>h2]:font-serif [&>h2]:text-3xl [&>h2]:font-semibold [&>h2]:text-cyan-300 [&>h2]:mt-10 [&>h2]:mb-4 [&>h3]:font-serif [&>h3]:text-2xl [&>h3]:text-cyan-100 [&>h3]:mt-8 [&>h3]:mb-3 [&>p]:mb-5 [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:mb-5 [&>ul>li]:mb-2 [&>ul>li>b]:text-cyan-200"
-          dangerouslySetInnerHTML={{ __html: section.text }}
-        />
-      </div>
+          <div
+            className="mt-6 text-lg leading-9 text-white/70 text-left [&>h2]:font-serif [&>h2]:text-3xl [&>h2]:font-semibold [&>h2]:text-cyan-300 [&>h2]:mt-10 [&>h2]:mb-4 [&>h3]:font-serif [&>h3]:text-2xl [&>h3]:text-cyan-100 [&>h3]:mt-8 [&>h3]:mb-3 [&>p]:mb-5 [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:mb-5 [&>ul>li]:mb-2 [&>ul>li>b]:text-cyan-200"
+            dangerouslySetInnerHTML={{ __html: section.text }}
+          />
+        </div>
+      )}
     </section>
   );
 }

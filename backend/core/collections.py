@@ -9,7 +9,7 @@ database = get_database()
 articles_collection = database["articles"]
 categories_collection = database["categories"]
 trips_collection = database["trips"]
-
+reviews_collection = database["reviews"]
 
 def initialize_collections():
     articles_collection.create_index(
@@ -52,6 +52,11 @@ def initialize_collections():
         name="trip_created_at_index",
     )
 
+    reviews_collection.create_index(
+        [("created_at", DESCENDING)],
+        name="review_created_at_index",
+    )
+    
     print(
         "MongoDB collections initialized successfully."
     )
