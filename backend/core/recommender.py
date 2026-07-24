@@ -192,4 +192,12 @@ class TravelRecommender:
 # -------------------------------------------------------
 # Single shared instance — imported by routes.py
 # -------------------------------------------------------
-recommender_instance = TravelRecommender()
+_recommender = None
+
+def get_recommender():
+    global _recommender
+
+    if _recommender is None:
+        _recommender = TravelRecommender()
+
+    return _recommender

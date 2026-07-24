@@ -26,7 +26,7 @@ from core.collections import (
     categories_collection,
     reviews_collection,
 )
-from core.recommender import recommender_instance
+from core.recommender import get_recommender
 
 
 api_bp = Blueprint("api", __name__)
@@ -94,7 +94,8 @@ def recommend():
             )
         }), 400
 
-    results = recommender_instance.get_recommendations(
+    recommender = get_recommender()
+    results = recommender.get_recommendations(
         query=query,
         top_n=top_n,
         bert_weight=bert_weight,
